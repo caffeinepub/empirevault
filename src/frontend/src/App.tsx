@@ -640,6 +640,12 @@ const PREVIEW_ITEMS = [
     src: "/assets/generated/canva-templates-mockup.dim_1200x800.jpg",
     alt: "Canva planners, journals & trackers templates",
   },
+  {
+    type: "code" as const,
+    label: "210+ Conversion Code Snippets",
+    src: "/assets/generated/code-snippets-preview.dim_1400x700.jpg",
+    alt: "210+ Conversion Code Snippets — split mockup of code editor and Shopify product page",
+  },
 ];
 
 function PreviewSection() {
