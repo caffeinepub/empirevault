@@ -73,6 +73,29 @@ function usePixelTracking() {
   }, []);
 }
 
+// ------ FADE UP WRAPPER ------
+function FadeUp({
+  children,
+  delay = 0,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 0.7, ease: "easeOut", delay }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 function GoldButton({
   children,
   className = "",
@@ -107,7 +130,7 @@ function GoldButton({
             }
           : {}
       }
-      whileHover={premium ? { scale: 1.05 } : { scale: 1.03 }}
+      whileHover={premium ? { scale: 1.05, y: -2 } : { scale: 1.04, y: -2 }}
       whileTap={premium ? { scale: 0.97 } : { scale: 0.98 }}
       onMouseEnter={() =>
         setBoxShadow(
@@ -148,123 +171,6 @@ function StarRating({ count = 5 }: { count?: number }) {
   );
 }
 
-// ------ BRAND-STYLE ICON COMPONENTS ------
-function ShopifyIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      className="w-5 h-5"
-      aria-label="Shopify"
-      role="img"
-    >
-      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <path d="M16 10a4 4 0 01-8 0" />
-    </svg>
-  );
-}
-
-function CanvaIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      className="w-5 h-5"
-      aria-label="Canva"
-      role="img"
-    >
-      <path d="M18.5 8A7 7 0 105.5 16" />
-    </svg>
-  );
-}
-
-function CodeIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-      aria-label="Code"
-      role="img"
-    >
-      <polyline points="16 18 22 12 16 6" />
-      <polyline points="8 6 2 12 8 18" />
-      <line x1="12" y1="4" x2="12" y2="20" />
-    </svg>
-  );
-}
-
-function DigitalIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-      aria-label="Digital Products"
-      role="img"
-    >
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" />
-    </svg>
-  );
-}
-
-function InstaIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-      aria-label="Instagram"
-      role="img"
-    >
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-    </svg>
-  );
-}
-
-function UpdatesIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-5 h-5"
-      aria-label="Updates"
-      role="img"
-    >
-      <polyline points="23 4 23 10 17 10" />
-      <polyline points="1 20 1 14 7 14" />
-      <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
-    </svg>
-  );
-}
-
 // ------ SECTION HEADING HELPER ------
 function SectionHeading({
   eyebrow,
@@ -276,7 +182,7 @@ function SectionHeading({
   subtitle?: string;
 }) {
   return (
-    <div className="flex flex-col items-center text-center mb-8">
+    <FadeUp className="flex flex-col items-center text-center mb-8">
       {eyebrow && (
         <p
           className="text-xs font-bold tracking-widest uppercase mb-2"
@@ -299,7 +205,7 @@ function SectionHeading({
           {subtitle}
         </p>
       )}
-    </div>
+    </FadeUp>
   );
 }
 
@@ -423,7 +329,7 @@ function Hero() {
           Launch Your Shopify Store Faster — Without Wasting Time or Money
         </motion.h1>
 
-        {/* 3. Subheadline */}
+        {/* 3. Subheadline with highlighted numbers */}
         <motion.p
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -431,7 +337,12 @@ function Hero() {
           className="text-base md:text-lg font-medium mb-3 max-w-md mx-auto text-center"
           style={{ color: "#374151" }}
         >
-          800+ Themes, 1000+ Ad Creatives &amp; 7500+ Templates in One Kit
+          <span style={{ fontWeight: 700, color: "#0A0A0A" }}>800+</span>{" "}
+          Themes,{" "}
+          <span style={{ fontWeight: 700, color: "#0A0A0A" }}>1000+</span> Ad
+          Creatives &amp;{" "}
+          <span style={{ fontWeight: 700, color: "#0A0A0A" }}>7500+</span>{" "}
+          Templates in One Kit
         </motion.p>
 
         {/* 4. Rating */}
@@ -597,7 +508,7 @@ function Benefits() {
           width: max-content;
         }
       `}</style>
-      <div className="text-center mb-4">
+      <FadeUp className="text-center mb-4">
         <h2
           className="text-base md:text-lg font-medium tracking-tight"
           style={{ color: "#0A0A0A" }}
@@ -612,7 +523,7 @@ function Benefits() {
             background: `linear-gradient(90deg, ${GOLD}, ${GOLD_LIGHT})`,
           }}
         />
-      </div>
+      </FadeUp>
       <div
         style={{
           overflow: "hidden",
@@ -709,10 +620,15 @@ function PreviewSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.07 }}
+              whileHover={{
+                y: -3,
+                boxShadow: "0 8px 32px rgba(0,0,0,0.13)",
+              }}
               className={`relative overflow-hidden rounded-xl${item.type === "code" ? " md:col-span-2" : ""}`}
               style={{
                 boxShadow:
                   "0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.03)",
+                transition: "box-shadow 0.25s ease",
               }}
             >
               <div className="aspect-video relative">
@@ -750,40 +666,15 @@ function PreviewSection() {
 // ------ WHAT YOU GET ------
 function WhatYouGet() {
   const items: {
-    icon: React.ReactNode;
     title: string;
     desc: string;
   }[] = [
-    {
-      icon: <ShopifyIcon />,
-      title: "800+ Shopify Themes",
-      desc: "Launch your store instantly",
-    },
-    {
-      icon: <CanvaIcon />,
-      title: "1000+ Ad Creatives",
-      desc: "Run high-converting ads easily",
-    },
-    {
-      icon: <CodeIcon />,
-      title: "210+ Code Snippets",
-      desc: "Boost conversions automatically",
-    },
-    {
-      icon: <DigitalIcon />,
-      title: "7500+ Canva Templates",
-      desc: "Create premium content fast",
-    },
-    {
-      icon: <InstaIcon />,
-      title: "130+ Instagram Mockups",
-      desc: "Build brand like an agency",
-    },
-    {
-      icon: <UpdatesIcon />,
-      title: "Free Lifetime Updates",
-      desc: "New assets added regularly",
-    },
+    { title: "800+ Shopify Themes", desc: "Launch your store instantly" },
+    { title: "1000+ Ad Creatives", desc: "Run high-converting ads easily" },
+    { title: "210+ Code Snippets", desc: "Boost conversions automatically" },
+    { title: "7500+ Canva Templates", desc: "Create premium content fast" },
+    { title: "130+ Instagram Mockups", desc: "Build brand like an agency" },
+    { title: "Free Lifetime Updates", desc: "New assets added regularly" },
   ];
 
   return (
@@ -792,54 +683,51 @@ function WhatYouGet() {
       className="py-14 md:py-20"
       style={{ background: "#FAFAFA" }}
     >
-      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+      <div className="max-w-lg mx-auto px-4 sm:px-6">
         <SectionHeading
           title="What You Get"
           subtitle="The ₹50,000+ Value Breakdown"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2">
+        <div className="flex flex-col">
           {items.map((item, i) => (
             <motion.div
               key={item.title}
               initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.35, delay: i * 0.06 }}
-              className="flex flex-col items-center text-center gap-2 px-4 py-5"
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{ y: -2 }}
+              className="flex flex-col items-center text-center py-6"
               style={{
                 borderBottom:
-                  i < items.length - (items.length % 2 === 0 ? 2 : 1)
-                    ? "1px solid #EBEBEB"
-                    : "none",
+                  i < items.length - 1 ? "1px solid #EBEBEB" : "none",
               }}
             >
-              <div className="flex items-center justify-center gap-2">
-                <div
-                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
-                  style={{
-                    background: "rgba(201,167,78,0.12)",
-                    border: "1px solid rgba(201,167,78,0.3)",
-                  }}
-                >
-                  <Check className="w-3.5 h-3.5" style={{ color: GOLD_DARK }} />
-                </div>
-                <span style={{ color: GOLD_DARK }}>{item.icon}</span>
+              {/* Tick icon centered */}
+              <div
+                className="w-7 h-7 rounded-full flex items-center justify-center mb-3"
+                style={{
+                  background: "rgba(201,167,78,0.12)",
+                  border: "1px solid rgba(201,167,78,0.3)",
+                }}
+              >
+                <Check className="w-3.5 h-3.5" style={{ color: GOLD_DARK }} />
               </div>
-              <div className="flex flex-col items-center">
-                <span
-                  className="font-semibold text-sm leading-snug"
-                  style={{ color: "#0A0A0A" }}
-                >
-                  {item.title}
-                </span>
-                <span
-                  className="text-xs mt-0.5 leading-relaxed"
-                  style={{ color: "#6B7280" }}
-                >
-                  {item.desc}
-                </span>
-              </div>
+              {/* Title */}
+              <span
+                className="font-bold text-sm leading-snug mb-1"
+                style={{ color: "#0A0A0A" }}
+              >
+                {item.title}
+              </span>
+              {/* Description */}
+              <span
+                className="text-xs leading-relaxed"
+                style={{ color: "#6B7280" }}
+              >
+                {item.desc}
+              </span>
             </motion.div>
           ))}
         </div>
@@ -877,7 +765,7 @@ function Bonuses() {
       }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-center mb-4">
+        <FadeUp className="flex justify-center mb-4">
           <span
             className="px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase"
             style={{
@@ -888,8 +776,8 @@ function Bonuses() {
           >
             EXCLUSIVE BONUSES
           </span>
-        </div>
-        <div className="text-center mb-8">
+        </FadeUp>
+        <FadeUp delay={0.1} className="text-center mb-8">
           <h2
             className="text-2xl md:text-3xl font-bold mb-2 tracking-tight max-w-xl mx-auto"
             style={{ color: "#0A0A0A" }}
@@ -910,7 +798,7 @@ function Bonuses() {
           >
             Everything included in your one-time purchase
           </p>
-        </div>
+        </FadeUp>
         <div className="grid md:grid-cols-3 gap-4">
           {bonuses.map((b, i) => (
             <motion.div
@@ -918,12 +806,17 @@ function Bonuses() {
               initial={{ opacity: 0, y: 16 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.08 }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{
+                y: -3,
+                boxShadow: "0 8px 32px rgba(201,167,78,0.12)",
+              }}
               className="relative p-5 rounded-xl text-center flex flex-col items-center gap-2.5 bg-white"
               style={{
                 border: "1px solid rgba(201,167,78,0.35)",
                 boxShadow:
                   "0 2px 12px rgba(201,167,78,0.08), 0 1px 4px rgba(0,0,0,0.03)",
+                transition: "box-shadow 0.25s ease",
               }}
             >
               <span
@@ -1157,28 +1050,29 @@ function FAQ() {
         />
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq, i) => (
-            <AccordionItem
-              key={faq.q}
-              value={`faq-${i}`}
-              className="rounded-xl overflow-hidden border-0 bg-white"
-              style={{
-                border: "1px solid #EBEBEB",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
-              }}
-            >
-              <AccordionTrigger
-                className="px-5 py-4 text-center font-semibold text-sm hover:no-underline justify-center gap-2"
-                style={{ color: "#0A0A0A" }}
+            <FadeUp key={faq.q} delay={i * 0.07}>
+              <AccordionItem
+                value={`faq-${i}`}
+                className="rounded-xl overflow-hidden border-0 bg-white"
+                style={{
+                  border: "1px solid #EBEBEB",
+                  boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                }}
               >
-                {faq.q}
-              </AccordionTrigger>
-              <AccordionContent
-                className="px-5 pb-4 text-sm leading-relaxed text-center max-w-2xl mx-auto"
-                style={{ color: "#6B7280" }}
-              >
-                {faq.a}
-              </AccordionContent>
-            </AccordionItem>
+                <AccordionTrigger
+                  className="px-5 py-4 text-center font-semibold text-sm hover:no-underline justify-center gap-2"
+                  style={{ color: "#0A0A0A" }}
+                >
+                  {faq.q}
+                </AccordionTrigger>
+                <AccordionContent
+                  className="px-5 pb-4 text-sm leading-relaxed text-center max-w-2xl mx-auto"
+                  style={{ color: "#6B7280" }}
+                >
+                  {faq.a}
+                </AccordionContent>
+              </AccordionItem>
+            </FadeUp>
           ))}
         </Accordion>
       </div>
@@ -1198,7 +1092,7 @@ function FinalCTA() {
           initial={{ opacity: 0, y: 24 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
           className="flex flex-col items-center text-center gap-5 max-w-xl mx-auto"
         >
           <h2
