@@ -1,2215 +1,1380 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import {
+  Check,
+  ChevronRight,
+  Download,
+  Infinity as InfinityIcon,
+  Menu,
+  RefreshCw,
+  Shield,
+  Star,
+  X,
+  Zap,
+} from "lucide-react";
+import { AnimatePresence, motion, useInView } from "motion/react";
+import { useEffect, useRef, useState } from "react";
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+const CHECKOUT_URL =
+  "https://superprofile.bio/vp/the-7-figure-store-kit-%E2%80%93-instant-access";
+const GOLD = "#C9A74E";
+const GOLD_LIGHT = "#E6C873";
+const GOLD_DARK = "#A8863A";
 
-const CATEGORIES = [
-  "Fashion",
-  "Jewelry",
-  "Beauty",
-  "Electronics",
-  "Home",
-  "Fitness",
-];
-
-const INITIAL_SECONDS = 2 * 3600 + 34 * 60 + 17;
-
-// ─── Mini Mockup Components ──────────────────────────────────────────────────
-
-function FashionStoreMini() {
-  return (
-    <div
-      className="mini-mockup"
-      style={{ background: "#0D0D0D", width: "100%" }}
-    >
-      {/* Navbar */}
-      <div
-        style={{
-          background: "#111",
-          padding: "5px 8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <span
-          style={{
-            color: "#fff",
-            fontSize: "7px",
-            fontWeight: 700,
-            letterSpacing: "2px",
-          }}
-        >
-          LUXE FASHION
-        </span>
-        <div style={{ display: "flex", gap: 6 }}>
-          {["New", "Sale", "Brands"].map((n) => (
-            <span
-              key={n}
-              style={{ color: "rgba(255,255,255,0.5)", fontSize: "5.5px" }}
-            >
-              {n}
-            </span>
-          ))}
-        </div>
-      </div>
-      {/* Hero Banner */}
-      <div
-        style={{
-          background: "linear-gradient(135deg, #1a0a00, #3d1a00)",
-          padding: "10px 8px",
-          textAlign: "center",
-        }}
-      >
-        <div
-          style={{
-            color: "rgba(255,255,255,0.5)",
-            fontSize: "5px",
-            letterSpacing: 3,
-            marginBottom: 2,
-          }}
-        >
-          NEW SEASON
-        </div>
-        <div
-          style={{
-            color: "#fff",
-            fontSize: "10px",
-            fontWeight: 800,
-            letterSpacing: 1,
-          }}
-        >
-          New Arrivals
-        </div>
-        <div style={{ color: "#C9A84C", fontSize: "5.5px", marginTop: 3 }}>
-          Shop the Collection →
-        </div>
-      </div>
-      {/* Product Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 3,
-          padding: "5px 5px",
-        }}
-      >
-        {[
-          { bg: "#2d1f1a", label: "Silk Blouse", price: "₹2,499" },
-          { bg: "#1a2030", label: "Evening Gown", price: "₹4,999" },
-          { bg: "#201a2d", label: "Kurta Set", price: "₹1,899" },
-        ].map((p) => (
-          <div
-            key={p.label}
-            style={{ background: p.bg, borderRadius: 4, overflow: "hidden" }}
-          >
-            <div
-              style={{
-                height: 28,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  width: 14,
-                  height: 20,
-                  background: "rgba(255,255,255,0.12)",
-                  borderRadius: 2,
-                }}
-              />
-            </div>
-            <div style={{ padding: "2px 3px", background: "rgba(0,0,0,0.3)" }}>
-              <div
-                style={{
-                  color: "rgba(255,255,255,0.8)",
-                  fontSize: "4.5px",
-                  fontWeight: 600,
-                }}
-              >
-                {p.label}
-              </div>
-              <div style={{ color: "#C9A84C", fontSize: "4px" }}>{p.price}</div>
-              <div style={{ display: "flex", gap: 1, marginTop: 2 }}>
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <span key={s} style={{ color: "#f59e0b", fontSize: "4px" }}>
-                    ★
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function JewelryStoreMini() {
-  return (
-    <div
-      className="mini-mockup"
-      style={{ background: "#FAFAF8", width: "100%" }}
-    >
-      {/* Navbar */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "5px 8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "1px solid #f0ede8",
-        }}
-      >
-        <span
-          style={{
-            color: "#2d2d2d",
-            fontSize: "7px",
-            fontWeight: 700,
-            letterSpacing: "2.5px",
-            fontStyle: "italic",
-          }}
-        >
-          BIJOU
-        </span>
-        <div style={{ display: "flex", gap: 6 }}>
-          {["Rings", "Necklaces", "Sets"].map((n) => (
-            <span key={n} style={{ color: "#888", fontSize: "5.5px" }}>
-              {n}
-            </span>
-          ))}
-        </div>
-      </div>
-      {/* Hero — product spotlight */}
-      <div
-        style={{
-          background: "linear-gradient(160deg, #fff9f0 0%, #fef3e2 100%)",
-          padding: "8px",
-          display: "flex",
-          gap: 6,
-          alignItems: "center",
-        }}
-      >
-        <div
-          style={{
-            flexShrink: 0,
-            width: 32,
-            height: 32,
-            background: "linear-gradient(135deg, #f5deb3, #daa520)",
-            borderRadius: "50%",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 4px 12px rgba(218,165,32,0.3)",
-          }}
-        >
-          <div
-            style={{
-              width: 14,
-              height: 14,
-              border: "2px solid rgba(255,255,255,0.6)",
-              borderRadius: "50%",
-            }}
-          />
-        </div>
-        <div>
-          <div style={{ color: "#888", fontSize: "4.5px", letterSpacing: 2 }}>
-            BESTSELLER
-          </div>
-          <div style={{ color: "#2d2d2d", fontSize: "8px", fontWeight: 700 }}>
-            Diamond Solitaire
-          </div>
-          <div style={{ color: "#C9A84C", fontSize: "5.5px", fontWeight: 600 }}>
-            ₹18,999{" "}
-            <span
-              style={{
-                color: "#bbb",
-                textDecoration: "line-through",
-                fontWeight: 400,
-              }}
-            >
-              ₹24,999
-            </span>
-          </div>
-          <div
-            style={{
-              marginTop: 4,
-              background: "#1a1a1a",
-              color: "#fff",
-              fontSize: "4.5px",
-              padding: "2px 6px",
-              borderRadius: 3,
-              display: "inline-block",
-            }}
-          >
-            Add to Cart
-          </div>
-        </div>
-      </div>
-      {/* Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 3,
-          padding: "4px 5px",
-        }}
-      >
-        {[
-          { label: "Pearl Set", bg: "#fdf8f0" },
-          { label: "Gold Chain", bg: "#fff8e7" },
-        ].map((p) => (
-          <div
-            key={p.label}
-            style={{
-              background: p.bg,
-              borderRadius: 4,
-              padding: 4,
-              border: "1px solid #f0e8d8",
-            }}
-          >
-            <div
-              style={{
-                height: 18,
-                background: "linear-gradient(135deg, #f5e6c8, #e8d5b0)",
-                borderRadius: 3,
-                marginBottom: 3,
-              }}
-            />
-            <div
-              style={{ color: "#2d2d2d", fontSize: "4.5px", fontWeight: 600 }}
-            >
-              {p.label}
-            </div>
-            <div style={{ color: "#C9A84C", fontSize: "4px" }}>₹9,999</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function BeautyStoreMini() {
-  return (
-    <div
-      className="mini-mockup"
-      style={{ background: "#fff5f7", width: "100%" }}
-    >
-      {/* Navbar */}
-      <div
-        style={{
-          background: "#fff",
-          padding: "5px 8px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "1px solid #fce4e8",
-        }}
-      >
-        <span
-          style={{
-            color: "#e8547a",
-            fontSize: "7px",
-            fontWeight: 800,
-            letterSpacing: "1.5px",
-          }}
-        >
-          GLOW
-        </span>
-        <div style={{ display: "flex", gap: 6 }}>
-          {["Skincare", "Makeup", "Offers"].map((n) => (
-            <span key={n} style={{ color: "#999", fontSize: "5.5px" }}>
-              {n}
-            </span>
-          ))}
-        </div>
-      </div>
-      {/* Hero */}
-      <div
-        style={{
-          background:
-            "linear-gradient(135deg, #ffe4ef 0%, #ffd6e7 50%, #ffb3cc 100%)",
-          padding: "10px 8px",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 3,
-        }}
-      >
-        <span
-          style={{
-            background: "#e8547a",
-            color: "#fff",
-            fontSize: "4.5px",
-            padding: "1.5px 5px",
-            borderRadius: 10,
-            fontWeight: 600,
-          }}
-        >
-          BESTSELLER
-        </span>
-        <div
-          style={{
-            color: "#c2154e",
-            fontSize: "9px",
-            fontWeight: 800,
-            lineHeight: 1.2,
-          }}
-        >
-          Transform
-          <br />
-          Your Skin
-        </div>
-        <div style={{ color: "#666", fontSize: "5px" }}>
-          Science-backed formulas
-        </div>
-        <div
-          style={{
-            background: "#e8547a",
-            color: "#fff",
-            fontSize: "4.5px",
-            padding: "2.5px 8px",
-            borderRadius: 3,
-            fontWeight: 600,
-          }}
-        >
-          Shop Now
-        </div>
-      </div>
-      {/* Products */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
-          gap: 3,
-          padding: "4px 5px",
-        }}
-      >
-        {[
-          { label: "Vitamin C", color: "#fff3e0" },
-          { label: "Rose Serum", color: "#fce4ec" },
-          { label: "SPF 50+", color: "#f3e5f5" },
-        ].map((p) => (
-          <div
-            key={p.label}
-            style={{ background: p.color, borderRadius: 4, padding: 3 }}
-          >
-            <div
-              style={{
-                height: 20,
-                background: "rgba(232,84,122,0.15)",
-                borderRadius: 3,
-                marginBottom: 2,
-              }}
-            />
-            <div style={{ color: "#444", fontSize: "4.5px", fontWeight: 600 }}>
-              {p.label}
-            </div>
-            <div style={{ color: "#e8547a", fontSize: "4px" }}>₹899</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-// ─── Ad Creative Mockups ─────────────────────────────────────────────────────
-
-function AdCreativeSquare() {
-  return (
-    <div
-      style={{
-        width: "100%",
-        aspectRatio: "1/1",
-        background: "linear-gradient(135deg, #FF512F 0%, #DD2476 100%)",
-        borderRadius: 8,
-        padding: 8,
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        boxShadow: "0 4px 16px rgba(221,36,118,0.25)",
-        overflow: "hidden",
-        position: "relative",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: -10,
-          right: -10,
-          width: 50,
-          height: 50,
-          background: "rgba(255,255,255,0.1)",
-          borderRadius: "50%",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          bottom: -15,
-          left: -5,
-          width: 60,
-          height: 60,
-          background: "rgba(255,255,255,0.07)",
-          borderRadius: "50%",
-        }}
-      />
-      <div
-        style={{
-          background: "rgba(255,255,255,0.2)",
-          borderRadius: 20,
-          padding: "2px 7px",
-          width: "fit-content",
-        }}
-      >
-        <span
-          style={{
-            color: "#fff",
-            fontSize: "6px",
-            fontWeight: 700,
-            letterSpacing: 1,
-          }}
-        >
-          SALE ENDS TONIGHT
-        </span>
-      </div>
-      <div>
-        <div
-          style={{
-            color: "rgba(255,255,255,0.8)",
-            fontSize: "7px",
-            letterSpacing: 1,
-          }}
-        >
-          Up To
-        </div>
-        <div
-          style={{
-            color: "#fff",
-            fontSize: "22px",
-            fontWeight: 900,
-            lineHeight: 1,
-            textShadow: "0 2px 8px rgba(0,0,0,0.2)",
-          }}
-        >
-          50%<span style={{ fontSize: 14 }}> OFF</span>
-        </div>
-        <div
-          style={{
-            color: "rgba(255,255,255,0.9)",
-            fontSize: "6px",
-            letterSpacing: 0.5,
-          }}
-        >
-          Flat Discount — All Categories
-        </div>
-      </div>
-      <div
-        style={{
-          background: "#fff",
-          color: "#DD2476",
-          fontSize: "7px",
-          fontWeight: 800,
-          textAlign: "center",
-          padding: "3px 0",
-          borderRadius: 4,
-        }}
-      >
-        SHOP NOW
-      </div>
-    </div>
-  );
-}
-
-function AdCreativeFestival() {
-  return (
-    <div
-      style={{
-        width: "100%",
-        background:
-          "linear-gradient(135deg, #1a0a2e 0%, #16213e 50%, #0f3460 100%)",
-        borderRadius: 8,
-        padding: 8,
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        overflow: "hidden",
-        position: "relative",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage:
-            "radial-gradient(circle at 20% 50%, rgba(212,160,23,0.15) 0%, transparent 60%), radial-gradient(circle at 80% 50%, rgba(255,100,50,0.1) 0%, transparent 60%)",
-        }}
-      />
-      {/* Diya icon */}
-      <div
-        style={{
-          flexShrink: 0,
-          width: 28,
-          height: 28,
-          background: "linear-gradient(135deg, #f59e0b, #d97706)",
-          borderRadius: "50% 50% 40% 40%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "flex-end",
-          paddingRight: 6,
-          boxShadow: "0 0 12px rgba(245,158,11,0.4)",
-        }}
-      >
-        <div
-          style={{
-            width: 4,
-            height: 8,
-            background: "rgba(255,200,50,0.9)",
-            borderRadius: 2,
-          }}
-        />
-      </div>
-      <div style={{ flex: 1, zIndex: 1 }}>
-        <div
-          style={{
-            color: "#f59e0b",
-            fontSize: "6.5px",
-            fontWeight: 700,
-            letterSpacing: 2,
-          }}
-        >
-          ✦ DIWALI SALE ✦
-        </div>
-        <div
-          style={{
-            color: "#fff",
-            fontSize: "9px",
-            fontWeight: 800,
-            lineHeight: 1.2,
-          }}
-        >
-          Limited Offer
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.6)", fontSize: "5.5px" }}>
-          Use code: DIWALI30
-        </div>
-      </div>
-      <div style={{ flexShrink: 0, textAlign: "center" }}>
-        <div style={{ color: "#f59e0b", fontSize: "10px", fontWeight: 900 }}>
-          30%
-        </div>
-        <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "5px" }}>
-          OFF
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AdCreativeStory() {
-  return (
-    <div
-      style={{
-        width: "100%",
-        background: "linear-gradient(180deg, #0d0d0d 0%, #1a1a2e 100%)",
-        borderRadius: 8,
-        padding: "6px 8px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        overflow: "hidden",
-        position: "relative",
-        boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          right: -8,
-          top: -8,
-          width: 40,
-          height: 40,
-          background:
-            "radial-gradient(circle, rgba(180,100,255,0.3), transparent)",
-          borderRadius: "50%",
-        }}
-      />
-      <div style={{ zIndex: 1 }}>
-        <div
-          style={{
-            color: "rgba(255,255,255,0.5)",
-            fontSize: "5.5px",
-            letterSpacing: 2,
-            marginBottom: 2,
-          }}
-        >
-          EXCLUSIVE
-        </div>
-        <div
-          style={{
-            color: "#fff",
-            fontSize: "10px",
-            fontWeight: 800,
-            lineHeight: 1.1,
-          }}
-        >
-          New
-          <br />
-          Collection
-        </div>
-        <div
-          style={{
-            background: "linear-gradient(135deg, #C9A84C, #F4C542)",
-            color: "#1a1a1a",
-            fontSize: "5.5px",
-            fontWeight: 700,
-            padding: "2px 6px",
-            borderRadius: 3,
-            marginTop: 4,
-            display: "inline-block",
-          }}
-        >
-          View All
-        </div>
-      </div>
-      {/* Silhouette */}
-      <div style={{ width: 24, height: 36, position: "relative", zIndex: 1 }}>
-        <div
-          style={{
-            width: 12,
-            height: 12,
-            background: "rgba(255,255,255,0.15)",
-            borderRadius: "50%",
-            margin: "0 auto 2px",
-          }}
-        />
-        <div
-          style={{
-            width: 18,
-            height: 24,
-            background: "rgba(255,255,255,0.1)",
-            borderRadius: "8px 8px 4px 4px",
-            margin: "0 auto",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
-
-// ─── Instagram Mockup ────────────────────────────────────────────────────────
-
-function InstagramPostMini({ type }: { type: "reel" | "product" }) {
-  if (type === "reel") {
-    return (
-      <div
-        style={{
-          background: "#000",
-          borderRadius: 8,
-          overflow: "hidden",
-          aspectRatio: "9/16",
-          position: "relative",
-          boxShadow: "0 4px 16px rgba(0,0,0,0.2)",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "linear-gradient(160deg, #1a0a2e 0%, #2d1040 50%, #0d0d0d 100%)",
-          }}
-        />
-        {/* Reel visual */}
-        <div
-          style={{
-            position: "absolute",
-            top: "20%",
-            left: "50%",
-            transform: "translateX(-50%)",
-            textAlign: "center",
-          }}
-        >
-          <div
-            style={{
-              width: 28,
-              height: 36,
-              background: "rgba(255,255,255,0.12)",
-              borderRadius: 4,
-              margin: "0 auto",
-            }}
-          />
-        </div>
-        {/* Reel indicator */}
-        <div style={{ position: "absolute", top: 6, right: 6 }}>
-          <svg
-            width="10"
-            height="10"
-            viewBox="0 0 24 24"
-            fill="white"
-            aria-hidden="true"
-            role="img"
-          >
-            <rect x="2" y="2" width="8" height="8" rx="2" opacity="0.8" />
-            <rect x="14" y="2" width="8" height="8" rx="2" opacity="0.6" />
-            <rect x="2" y="14" width="8" height="8" rx="2" opacity="0.6" />
-            <rect x="14" y="14" width="8" height="8" rx="2" opacity="0.4" />
-          </svg>
-        </div>
-        {/* Bottom UI */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            padding: "4px 5px",
-            background: "linear-gradient(to top, rgba(0,0,0,0.8), transparent)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-              marginBottom: 2,
-            }}
-          >
-            <div
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                background:
-                  "linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)",
-              }}
-            />
-            <span style={{ color: "#fff", fontSize: "5px", fontWeight: 600 }}>
-              @luxefashion
-            </span>
-          </div>
-          <div style={{ color: "rgba(255,255,255,0.8)", fontSize: "4.5px" }}>
-            New Season Collection ✨
-          </div>
-          <div style={{ display: "flex", gap: 5, marginTop: 2 }}>
-            <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "4.5px" }}>
-              ♥ 4.2k
-            </span>
-            <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "4.5px" }}>
-              💬 238
-            </span>
-          </div>
-        </div>
-      </div>
-    );
+declare global {
+  interface Window {
+    fbq?: (...args: unknown[]) => void;
   }
-  return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 8,
-        overflow: "hidden",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          padding: "4px 6px",
-          borderBottom: "1px solid #f5f5f5",
-        }}
-      >
-        <div
-          style={{
-            width: 10,
-            height: 10,
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, #f09433, #dc2743, #cc2366)",
-          }}
-        />
-        <span style={{ fontSize: "5px", fontWeight: 600, color: "#222" }}>
-          shopaluxe
-        </span>
-        <span style={{ marginLeft: "auto", fontSize: "8px", color: "#333" }}>
-          •••
-        </span>
-      </div>
-      {/* Image */}
-      <div
-        style={{
-          height: 40,
-          background: "linear-gradient(135deg, #f5efe6, #e8d5b8)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            width: 20,
-            height: 28,
-            background: "rgba(180,120,60,0.2)",
-            borderRadius: 3,
-          }}
-        />
-      </div>
-      {/* Actions */}
-      <div style={{ padding: "3px 6px" }}>
-        <div style={{ display: "flex", gap: 4, marginBottom: 2 }}>
-          <span style={{ fontSize: "7px" }}>♡</span>
-          <span style={{ fontSize: "7px" }}>💬</span>
-          <span style={{ fontSize: "7px" }}>↗</span>
-        </div>
-        <div style={{ color: "#222", fontSize: "4.5px", fontWeight: 600 }}>
-          12,483 likes
-        </div>
-        <div style={{ color: "#555", fontSize: "4px" }}>
-          New Silk Collection is here 🌸
-        </div>
-      </div>
-    </div>
-  );
 }
 
-// ─── Canva Template Mockup ────────────────────────────────────────────────────
-
-function CanvaTemplateMini({ type }: { type: "planner" | "tracker" }) {
-  if (type === "planner") {
-    return (
-      <div
-        style={{
-          background: "#fff",
-          borderRadius: 8,
-          padding: 8,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-          border: "1px solid #f0ede8",
-        }}
-      >
-        <div
-          style={{
-            color: "#C9A84C",
-            fontSize: "6px",
-            fontWeight: 700,
-            letterSpacing: 2,
-            marginBottom: 3,
-          }}
-        >
-          MARCH 2026
-        </div>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(7, 1fr)",
-            gap: 1.5,
-          }}
-        >
-          {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((d) => (
-            <div
-              key={d}
-              style={{ color: "#999", fontSize: "4px", textAlign: "center" }}
-            >
-              {d}
-            </div>
-          ))}
-          {[
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19,
-            20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-          ].map((day) => {
-            const i = day - 1;
-            return (
-              <div
-                key={day}
-                style={{
-                  background:
-                    i === 18 ? "#C9A84C" : i < 18 ? "#f5f5f5" : "transparent",
-                  color: i === 18 ? "#fff" : i < 18 ? "#333" : "#bbb",
-                  fontSize: "4.5px",
-                  textAlign: "center",
-                  borderRadius: 2,
-                  padding: "1px 0",
-                }}
-              >
-                {day}
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
+function trackCTA() {
+  if (window.fbq) {
+    window.fbq("track", "AddToCart");
+    window.fbq("track", "InitiateCheckout");
+    window.fbq("trackCustom", "OutboundClick");
   }
+  window.location.href = CHECKOUT_URL;
+}
+
+function usePixelTracking() {
+  useEffect(() => {
+    const scrollMilestones: Record<number, boolean> = {
+      25: false,
+      50: false,
+      75: false,
+      90: false,
+    };
+    const handleScroll = () => {
+      const scrolled =
+        (window.scrollY / (document.body.scrollHeight - window.innerHeight)) *
+        100;
+      for (const [milestone, fired] of Object.entries(scrollMilestones)) {
+        const ms = Number(milestone);
+        if (!fired && scrolled >= ms) {
+          scrollMilestones[ms] = true;
+          window.fbq?.("trackCustom", `Scroll${ms}`);
+        }
+      }
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    const t10 = setTimeout(() => window.fbq?.("trackCustom", "Time10s"), 10000);
+    const t30 = setTimeout(() => window.fbq?.("trackCustom", "Time30s"), 30000);
+    const t60 = setTimeout(() => window.fbq?.("trackCustom", "Time60s"), 60000);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(t10);
+      clearTimeout(t30);
+      clearTimeout(t60);
+    };
+  }, []);
+}
+
+function GoldButton({
+  children,
+  className = "",
+  size = "default",
+  onClick,
+  vibrate = false,
+  premium = false,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  size?: "default" | "large";
+  onClick?: () => void;
+  vibrate?: boolean;
+  premium?: boolean;
+}) {
+  const [boxShadow, setBoxShadow] = useState(
+    "0 0 24px rgba(201,167,78,0.35), 0 4px 16px rgba(201,167,78,0.20)",
+  );
+
   return (
-    <div
+    <motion.button
+      type="button"
+      onClick={onClick ?? trackCTA}
+      onHoverStart={() => window.fbq?.("trackCustom", "ButtonHover")}
+      animate={vibrate ? { x: [0, -3, 3, -3, 3, 0] } : {}}
+      transition={
+        vibrate
+          ? {
+              duration: 0.5,
+              repeat: Number.POSITIVE_INFINITY,
+              repeatDelay: 2.5,
+            }
+          : {}
+      }
+      whileHover={premium ? { scale: 1.05 } : { scale: 1.03 }}
+      whileTap={premium ? { scale: 0.97 } : { scale: 0.98 }}
+      onMouseEnter={() =>
+        setBoxShadow(
+          "0 0 36px rgba(201,167,78,0.60), 0 6px 24px rgba(201,167,78,0.40)",
+        )
+      }
+      onMouseLeave={() =>
+        setBoxShadow(
+          "0 0 24px rgba(201,167,78,0.35), 0 4px 16px rgba(201,167,78,0.20)",
+        )
+      }
+      className={`btn-gold inline-flex items-center justify-center gap-2 rounded-xl font-bold tracking-wide cursor-pointer ${
+        size === "large" ? "px-8 py-4 text-base" : "px-5 py-2.5 text-sm"
+      } ${className}`}
       style={{
-        background: "#fafafa",
-        borderRadius: 8,
-        padding: 7,
-        boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-        border: "1px solid #f0ede8",
+        background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+        color: "#000000",
+        boxShadow,
+        transition: "box-shadow 0.3s ease",
       }}
     >
-      <div
-        style={{
-          color: "#1a1a1a",
-          fontSize: "6px",
-          fontWeight: 700,
-          marginBottom: 4,
-        }}
-      >
-        Habit Tracker
-      </div>
-      {["Morning Run", "Read 30 min", "Hydrate 2L", "Meditate"].map(
-        (habit, hi) => (
-          <div
-            key={habit}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 3,
-              marginBottom: 3,
-            }}
-          >
-            <span style={{ color: "#555", fontSize: "4.5px", flex: 1 }}>
-              {habit}
-            </span>
-            <div style={{ display: "flex", gap: 1 }}>
-              {(["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"] as string[]).map(
-                (wd, wi) => (
-                  <div
-                    key={`${habit}-${wd}`}
-                    style={{
-                      width: 5,
-                      height: 5,
-                      borderRadius: 1,
-                      background: wi < hi + 3 ? "#C9A84C" : "#eee",
-                    }}
-                  />
-                ),
-              )}
-            </div>
-          </div>
-        ),
-      )}
-    </div>
+      {children}
+    </motion.button>
   );
 }
 
-// ─── CSS Blouse Illustration ─────────────────────────────────────────────────
-
-function BlouseIllustration() {
+function StarRating({ count = 5 }: { count?: number }) {
   return (
-    <div
-      style={{
-        position: "relative",
-        width: 180,
-        height: 200,
-        margin: "0 auto",
-      }}
-    >
-      {/* Fabric background glow */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(ellipse at 50% 60%, rgba(201,168,76,0.15), transparent 70%)",
-          borderRadius: "50%",
-        }}
-      />
-      {/* Main blouse body */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 20,
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 110,
-          height: 110,
-          background:
-            "linear-gradient(160deg, #f5c842 0%, #e8a020 40%, #c67c10 100%)",
-          borderRadius: "8px 8px 40% 40%",
-          boxShadow:
-            "0 8px 32px rgba(200,120,20,0.3), inset 0 2px 8px rgba(255,255,255,0.3)",
-          overflow: "hidden",
-        }}
-      >
-        {/* Fabric sheen */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: "20%",
-            width: "30%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent)",
-            transform: "skewX(-15deg)",
-          }}
+    <div className="flex gap-0.5 justify-center">
+      {["s1", "s2", "s3", "s4", "s5"].slice(0, count).map((k) => (
+        <Star
+          key={k}
+          className="w-3.5 h-3.5 fill-current"
+          style={{ color: GOLD }}
         />
-        {/* Gold embroidery border */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 22,
-            background:
-              "linear-gradient(90deg, rgba(255,220,100,0.6), rgba(255,200,50,0.8), rgba(255,220,100,0.6))",
-            borderTop: "2px solid rgba(255,240,160,0.6)",
-          }}
-        >
-          {/* Embroidery pattern */}
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-around",
-              alignItems: "center",
-              height: "100%",
-              padding: "0 8px",
-            }}
-          >
-            {(
-              [
-                ["k1", "◆"],
-                ["k2", "◇"],
-                ["k3", "◆"],
-                ["k4", "◇"],
-                ["k5", "◆"],
-                ["k6", "◇"],
-                ["k7", "◆"],
-              ] as [string, string][]
-            ).map(([k, sym]) => (
-              <span
-                key={k}
-                style={{ color: "rgba(140,80,0,0.7)", fontSize: "7px" }}
-              >
-                {sym}
-              </span>
-            ))}
-          </div>
-        </div>
-        {/* Neckline */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 60,
-            height: 22,
-            background: "#c67c10",
-            borderRadius: "0 0 50% 50%",
-            borderBottom: "2px solid rgba(255,200,50,0.5)",
-          }}
-        />
-      </div>
-      {/* Left sleeve */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 68,
-          left: "50%",
-          marginLeft: -84,
-          width: 40,
-          height: 60,
-          background: "linear-gradient(160deg, #f0b830, #e09820, #c07010)",
-          borderRadius: "8px 2px 20px 20px",
-          transform: "rotate(-12deg)",
-          boxShadow: "0 4px 16px rgba(180,100,10,0.2)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: "40%",
-            width: "30%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
-          }}
-        />
-        {/* Sleeve embroidery cuff */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 10,
-            background:
-              "linear-gradient(90deg, rgba(255,220,100,0.5), rgba(255,200,50,0.7), rgba(255,220,100,0.5))",
-            borderTop: "1.5px solid rgba(255,240,160,0.5)",
-          }}
-        />
-      </div>
-      {/* Right sleeve */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 68,
-          left: "50%",
-          marginLeft: 44,
-          width: 40,
-          height: 60,
-          background: "linear-gradient(160deg, #f0b830, #e09820, #c07010)",
-          borderRadius: "2px 8px 20px 20px",
-          transform: "rotate(12deg)",
-          boxShadow: "0 4px 16px rgba(180,100,10,0.2)",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: "30%",
-            width: "30%",
-            height: "100%",
-            background:
-              "linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 10,
-            background:
-              "linear-gradient(90deg, rgba(255,220,100,0.5), rgba(255,200,50,0.7), rgba(255,220,100,0.5))",
-            borderTop: "1.5px solid rgba(255,240,160,0.5)",
-          }}
-        />
-      </div>
-      {/* Dupatta/drape */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 30,
-          left: "50%",
-          marginLeft: 30,
-          width: 48,
-          height: 90,
-          background:
-            "linear-gradient(160deg, rgba(255,200,60,0.4), rgba(245,180,30,0.5), rgba(220,140,10,0.3))",
-          borderRadius: "4px 20px 20px 4px",
-          transform: "rotate(6deg)",
-          filter: "blur(0.5px)",
-        }}
-      />
-      {/* Label tag */}
-      <div
-        style={{
-          position: "absolute",
-          top: 16,
-          right: 14,
-          background: "rgba(255,255,255,0.95)",
-          borderRadius: 6,
-          padding: "3px 7px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
-          border: "1px solid rgba(201,168,76,0.3)",
-        }}
-      >
-        <div
-          style={{
-            color: "#C9A84C",
-            fontSize: "7px",
-            fontWeight: 700,
-            letterSpacing: 0.5,
-          }}
-        >
-          PREMIUM
-        </div>
-        <div style={{ color: "#555", fontSize: "6px" }}>100% Silk</div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Left Card: Shopify Themes ────────────────────────────────────────────────
-
-function ShopifyThemesCard({ activeTab }: { activeTab: string }) {
-  const tabThemes: Record<
-    string,
-    { label: string; tagline: string; color: string }[]
-  > = {
-    Fashion: [
-      {
-        label: "LUXE FASHION",
-        tagline: "Dark luxury streetwear theme",
-        color: "#111",
-      },
-      { label: "BIJOU", tagline: "Elegant jewelry boutique", color: "#fafaf8" },
-      { label: "GLOW", tagline: "Rose beauty & skincare", color: "#fff5f7" },
-    ],
-    Jewelry: [
-      { label: "BIJOU", tagline: "Elegant jewelry boutique", color: "#fafaf8" },
-      {
-        label: "GEMSTONE",
-        tagline: "Luxury gem marketplace",
-        color: "#0a0a14",
-      },
-      {
-        label: "AURUM",
-        tagline: "Gold & diamond specialist",
-        color: "#fff9f0",
-      },
-    ],
-    Beauty: [
-      { label: "GLOW", tagline: "Rose beauty & skincare", color: "#fff5f7" },
-      { label: "BLOOM", tagline: "Natural & organic beauty", color: "#f0faf0" },
-      { label: "VELVET", tagline: "Luxury makeup studio", color: "#1a0014" },
-    ],
-    Electronics: [
-      {
-        label: "TECHPRO",
-        tagline: "Premium electronics store",
-        color: "#0a0a14",
-      },
-      { label: "GADGET+", tagline: "Smart home & devices", color: "#0d1117" },
-      { label: "CIRCUIT", tagline: "Components & DIY kits", color: "#111" },
-    ],
-    Home: [
-      { label: "SERENE", tagline: "Minimal home décor", color: "#f8f6f2" },
-      { label: "HAVEN", tagline: "Cozy interior studio", color: "#f5f0e8" },
-      { label: "CRAFT", tagline: "Artisan furniture & more", color: "#1a1208" },
-    ],
-    Fitness: [
-      {
-        label: "POWERFIT",
-        tagline: "Performance sportswear",
-        color: "#0d0d0d",
-      },
-      { label: "ZENFLOW", tagline: "Yoga & wellness store", color: "#f0faf5" },
-      { label: "REPSMAX", tagline: "Gym equipment & gear", color: "#0a1220" },
-    ],
-  };
-  const themes = tabThemes[activeTab] || tabThemes.Fashion;
-  const Mockups = [FashionStoreMini, JewelryStoreMini, BeautyStoreMini];
-
-  return (
-    <div
-      className="h-card hero-animate-in"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 16,
-        height: "100%",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-              marginBottom: 2,
-            }}
-          >
-            {/* Shopify icon */}
-            <svg
-              width="18"
-              height="18"
-              viewBox="0 0 24 24"
-              fill="none"
-              aria-label="Shopify"
-              role="img"
-            >
-              <title>Shopify</title>
-              <path
-                d="M15.337 23.979l7.291-1.574S19.797 7.194 19.779 7.02c-.018-.175-.175-.292-.319-.292-.144 0-2.719-.058-2.719-.058s-1.793-1.76-1.984-1.951V23.98h.58z"
-                fill="#95BF47"
-              />
-              <path
-                d="M12.102 8.044l-.868 2.747s-.975-.466-2.164-.466c-1.753 0-1.841 1.1-1.841 1.374 0 1.508 3.932 2.085 3.932 5.625 0 2.782-1.765 4.576-4.144 4.576-2.856 0-4.318-1.783-4.318-1.783l.764-2.524s1.503 1.288 2.769 1.288c.828 0 1.163-.649 1.163-1.123 0-1.96-3.224-2.047-3.224-5.3 0-2.724 1.96-5.36 5.921-5.36 1.524 0 2.01.447 2.01.447z"
-                fill="#5E8E3E"
-              />
-              <path
-                d="M14.41 4.065c-.018 0-.36.01-.36.01s-.533-1.63-1.82-1.63c-.017 0-.033 0-.05.002C11.784.97 10.84.5 10.055.5 5.876.5 3.882 5.6 3.235 8.44c-1.678.52-2.87.89-3.022.938-.936.293-.965.32-.085 1.203.686.68 5.42 4.69 5.42 4.69l6.282-1.357L14.41 4.065z"
-                fill="#95BF47"
-              />
-            </svg>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#1A1A1A" }}>
-              800+ Shopify Themes
-            </span>
-          </div>
-          <div style={{ fontSize: 12, color: "#6B6B6B" }}>
-            Launch any store instantly
-          </div>
-        </div>
-        <div
-          style={{
-            background: "#f0fdf4",
-            color: "#166534",
-            fontSize: 11,
-            fontWeight: 600,
-            padding: "3px 8px",
-            borderRadius: 20,
-            border: "1px solid #bbf7d0",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Premium
-        </div>
-      </div>
-
-      {/* Mini website mockups */}
-      <div
-        style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}
-      >
-        {themes.slice(0, 3).map((theme, i) => {
-          const MiniComp = Mockups[i];
-          return (
-            <div
-              key={theme.label}
-              style={{ flex: 1, opacity: 1, transition: "opacity 0.3s ease" }}
-            >
-              <MiniComp />
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  marginTop: 5,
-                }}
-              >
-                <div
-                  style={{
-                    width: 8,
-                    height: 8,
-                    background:
-                      i === 0 ? "#111" : i === 1 ? "#f5e6c8" : "#fce4e8",
-                    borderRadius: 2,
-                    border: "1px solid rgba(0,0,0,0.1)",
-                  }}
-                />
-                <span
-                  style={{ fontSize: 11, fontWeight: 600, color: "#1A1A1A" }}
-                >
-                  {theme.label}
-                </span>
-                <span style={{ fontSize: 10, color: "#6B6B6B" }}>
-                  — {theme.tagline}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Footer tag */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          paddingTop: 8,
-          borderTop: "1px solid rgba(0,0,0,0.05)",
-        }}
-      >
-        <span style={{ fontSize: 11, color: "#6B6B6B" }}>
-          + 800 more themes included
-        </span>
-        <span
-          style={{
-            fontSize: 11,
-            color: "#C9A84C",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
-          Browse →
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Center Card: Featured Product ───────────────────────────────────────────
-
-function FeaturedProductCard({
-  countdown,
-}: { countdown: { h: number; m: number; s: number } }) {
-  const pad = (n: number) => String(n).padStart(2, "0");
-
-  return (
-    <div
-      className="h-card-elevated hero-float"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 0,
-        zIndex: 10,
-        position: "relative",
-      }}
-    >
-      {/* Top tag */}
-      <div
-        style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}
-      >
-        <div
-          style={{
-            background: "linear-gradient(135deg, #fff3cd, #ffeaa7)",
-            color: "#92610a",
-            fontSize: 11,
-            fontWeight: 700,
-            padding: "4px 14px",
-            borderRadius: 20,
-            border: "1px solid rgba(201,168,76,0.3)",
-            display: "flex",
-            alignItems: "center",
-            gap: 5,
-          }}
-        >
-          <span style={{ fontSize: 10 }}>⚡</span> Limited Time Offer
-        </div>
-      </div>
-
-      {/* Product title */}
-      <div style={{ textAlign: "center", marginBottom: 14 }}>
-        <div
-          style={{
-            fontSize: 20,
-            fontWeight: 800,
-            color: "#1A1A1A",
-            letterSpacing: -0.3,
-            lineHeight: 1.2,
-          }}
-        >
-          Premium Silk Blouse
-        </div>
-        <div style={{ fontSize: 12, color: "#6B6B6B", marginTop: 4 }}>
-          Ethnic wear · Handcrafted · Gold embroidery
-        </div>
-      </div>
-
-      {/* Product visual */}
-      <div
-        style={{
-          background:
-            "linear-gradient(160deg, #FFF9EF 0%, #FFF3DC 60%, #FFE8BE 100%)",
-          borderRadius: 12,
-          padding: "8px 0 0",
-          marginBottom: 14,
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background:
-              "radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.12), transparent 60%)",
-          }}
-        />
-        <BlouseIllustration />
-      </div>
-
-      {/* Price */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 10,
-          marginBottom: 12,
-        }}
-      >
-        <span style={{ fontSize: 26, fontWeight: 900, color: "#1A1A1A" }}>
-          ₹2,499
-        </span>
-        <span
-          style={{
-            fontSize: 15,
-            color: "#aaa",
-            textDecoration: "line-through",
-            fontWeight: 400,
-          }}
-        >
-          ₹4,999
-        </span>
-        <span
-          style={{
-            background: "#FF3B30",
-            color: "#fff",
-            fontSize: 11,
-            fontWeight: 700,
-            padding: "3px 8px",
-            borderRadius: 6,
-          }}
-        >
-          50% OFF
-        </span>
-      </div>
-
-      {/* Countdown */}
-      <div
-        style={{
-          background: "#FAF7F2",
-          borderRadius: 10,
-          padding: "10px 14px",
-          marginBottom: 14,
-          border: "1px solid rgba(201,168,76,0.2)",
-        }}
-      >
-        <div
-          style={{
-            fontSize: 11,
-            color: "#6B6B6B",
-            textAlign: "center",
-            marginBottom: 8,
-            fontWeight: 500,
-            letterSpacing: 0.5,
-            textTransform: "uppercase" as const,
-          }}
-        >
-          Offer Ends In
-        </div>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 6,
-          }}
-        >
-          <div style={{ textAlign: "center" }}>
-            <div className="h-countdown-digit">{pad(countdown.h)}</div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#6B6B6B",
-                marginTop: 3,
-                letterSpacing: 0.5,
-              }}
-            >
-              HRS
-            </div>
-          </div>
-          <div
-            style={{
-              color: "#C9A84C",
-              fontWeight: 700,
-              fontSize: 18,
-              paddingBottom: 12,
-            }}
-          >
-            :
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div className="h-countdown-digit">{pad(countdown.m)}</div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#6B6B6B",
-                marginTop: 3,
-                letterSpacing: 0.5,
-              }}
-            >
-              MIN
-            </div>
-          </div>
-          <div
-            style={{
-              color: "#C9A84C",
-              fontWeight: 700,
-              fontSize: 18,
-              paddingBottom: 12,
-            }}
-          >
-            :
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <div
-              className="h-countdown-digit"
-              style={{ animation: "countdown-pulse 1s ease-in-out infinite" }}
-            >
-              {pad(countdown.s)}
-            </div>
-            <div
-              style={{
-                fontSize: 9,
-                color: "#6B6B6B",
-                marginTop: 3,
-                letterSpacing: 0.5,
-              }}
-            >
-              SEC
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Trust badges */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-around",
-          marginBottom: 14,
-          padding: "8px 0",
-          borderTop: "1px solid rgba(0,0,0,0.05)",
-          borderBottom: "1px solid rgba(0,0,0,0.05)",
-        }}
-      >
-        {[
-          { icon: "🔒", label: "Secure" },
-          { icon: "🚚", label: "Free Shipping" },
-          { icon: "🔄", label: "30 Day Return" },
-        ].map((b) => (
-          <div
-            key={b.label}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 3,
-            }}
-          >
-            <span style={{ fontSize: 16 }}>{b.icon}</span>
-            <span style={{ fontSize: 10, color: "#555", fontWeight: 500 }}>
-              {b.label}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* CTA */}
-      <button
-        type="button"
-        className="h-cta-btn"
-        data-ocid="hero.primary_button"
-      >
-        Add to Cart
-      </button>
-
-      {/* Reviews */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 6,
-          marginTop: 10,
-        }}
-      >
-        <div style={{ display: "flex" }}>
-          {[1, 2, 3, 4, 5].map((s) => (
-            <span key={s} style={{ color: "#f59e0b", fontSize: 12 }}>
-              ★
-            </span>
-          ))}
-        </div>
-        <span style={{ fontSize: 11, color: "#6B6B6B" }}>
-          4.9 · 2,847 reviews
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// ─── Right Card: Ad Creatives + Instagram/Templates ──────────────────────────
-
-function CreativesAndMockupsCard() {
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        height: "100%",
-      }}
-    >
-      {/* Top: Ad Creatives */}
-      <div className="h-card hero-animate-in-delay-1" style={{ flex: 1 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                marginBottom: 2,
-              }}
-            >
-              {/* Canva icon */}
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-label="Canva"
-                role="img"
-              >
-                <title>Canva</title>
-                <rect width="24" height="24" rx="6" fill="#7D2AE8" />
-                <text x="5" y="17" fontSize="13" fontWeight="800" fill="white">
-                  C
-                </text>
-              </svg>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#1A1A1A" }}>
-                1000+ Ad Creatives
-              </span>
-            </div>
-            <div style={{ fontSize: 11, color: "#6B6B6B" }}>
-              Run high-converting ads easily
-            </div>
-          </div>
-          <div
-            style={{
-              background: "#faf5ff",
-              color: "#7c3aed",
-              fontSize: 11,
-              fontWeight: 600,
-              padding: "3px 8px",
-              borderRadius: 20,
-              border: "1px solid #e9d5ff",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Canva
-          </div>
-        </div>
-
-        {/* Ad creative thumbnails */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-          <AdCreativeSquare />
-          <AdCreativeFestival />
-          <AdCreativeStory />
-        </div>
-      </div>
-
-      {/* Bottom: Instagram + Canva Templates */}
-      <div className="h-card hero-animate-in-delay-2" style={{ flex: 1 }}>
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: 12,
-            marginBottom: 10,
-          }}
-        >
-          {/* Instagram column */}
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 8,
-              }}
-            >
-              {/* Instagram icon */}
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-label="Instagram"
-                role="img"
-              >
-                <title>Instagram</title>
-                <rect width="24" height="24" rx="6" fill="url(#ig-grad)" />
-                <defs>
-                  <linearGradient id="ig-grad" x1="0" y1="24" x2="24" y2="0">
-                    <stop stopColor="#f09433" />
-                    <stop offset="0.25" stopColor="#e6683c" />
-                    <stop offset="0.5" stopColor="#dc2743" />
-                    <stop offset="0.75" stopColor="#cc2366" />
-                    <stop offset="1" stopColor="#bc1888" />
-                  </linearGradient>
-                </defs>
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="4"
-                  stroke="white"
-                  strokeWidth="1.5"
-                />
-                <circle cx="17.5" cy="6.5" r="1.2" fill="white" />
-                <rect
-                  x="3"
-                  y="3"
-                  width="18"
-                  height="18"
-                  rx="5"
-                  stroke="white"
-                  strokeWidth="1.5"
-                  fill="none"
-                />
-              </svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
-                130+ Mockups
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <InstagramPostMini type="reel" />
-              <InstagramPostMini type="product" />
-            </div>
-          </div>
-
-          {/* Canva Templates column */}
-          <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                marginBottom: 8,
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                aria-label="Canva Templates"
-                role="img"
-              >
-                <title>Canva Templates</title>
-                <rect width="24" height="24" rx="6" fill="#00C4CC" />
-                <text x="5" y="17" fontSize="13" fontWeight="800" fill="white">
-                  C
-                </text>
-              </svg>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
-                7500+ Templates
-              </span>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <CanvaTemplateMini type="planner" />
-              <CanvaTemplateMini type="tracker" />
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            background: "linear-gradient(135deg, #f8f5ff, #faf7f2)",
-            borderRadius: 8,
-            padding: "8px 10px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#1A1A1A" }}>
-              All-in-One Bundle
-            </div>
-            <div style={{ fontSize: 10, color: "#6B6B6B" }}>
-              9,840+ assets included
-            </div>
-          </div>
-          <div
-            style={{
-              background: "linear-gradient(135deg, #D4A017, #F4C542)",
-              color: "#1a1a1a",
-              fontSize: 10,
-              fontWeight: 700,
-              padding: "5px 12px",
-              borderRadius: 8,
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-            }}
-          >
-            Get Kit →
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ─── Category Tabs ────────────────────────────────────────────────────────────
-
-function CategoryTabs({
-  active,
-  onSelect,
-}: { active: string; onSelect: (t: string) => void }) {
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 4,
-        padding: "6px",
-        background: "rgba(255,255,255,0.8)",
-        borderRadius: 50,
-        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
-        border: "1px solid rgba(0,0,0,0.05)",
-        backdropFilter: "blur(8px)",
-        flexWrap: "wrap" as const,
-      }}
-    >
-      {CATEGORIES.map((cat) => (
-        <button
-          key={cat}
-          type="button"
-          className={`h-tab${active === cat ? " active" : ""}`}
-          onClick={() => onSelect(cat)}
-          data-ocid="hero.tab"
-        >
-          {cat}
-        </button>
       ))}
     </div>
   );
 }
 
-// ─── Main App ─────────────────────────────────────────────────────────────────
-
-export default function App() {
-  const [activeTab, setActiveTab] = useState("Fashion");
-  const [seconds, setSeconds] = useState(INITIAL_SECONDS);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setSeconds((s) => (s <= 0 ? INITIAL_SECONDS : s - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const countdown = {
-    h: Math.floor(seconds / 3600),
-    m: Math.floor((seconds % 3600) / 60),
-    s: seconds % 60,
-  };
-
-  const handleTabSelect = useCallback((tab: string) => setActiveTab(tab), []);
-
+// ------ BRAND-STYLE ICON COMPONENTS ------
+function ShopifyIcon() {
   return (
-    <div data-theme="hero" style={{ minHeight: "100vh", padding: "0 0 60px" }}>
-      {/* Header */}
-      <header
-        style={{
-          padding: "20px 24px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottom: "1px solid rgba(0,0,0,0.05)",
-          background: "rgba(250,247,242,0.9)",
-          backdropFilter: "blur(12px)",
-          position: "sticky" as const,
-          top: 0,
-          zIndex: 50,
-        }}
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      className="w-5 h-5"
+      aria-label="Shopify"
+      role="img"
+    >
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 01-8 0" />
+    </svg>
+  );
+}
+
+function CanvaIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.2"
+      strokeLinecap="round"
+      className="w-5 h-5"
+      aria-label="Canva"
+      role="img"
+    >
+      <path d="M18.5 8A7 7 0 105.5 16" />
+    </svg>
+  );
+}
+
+function CodeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+      aria-label="Code"
+      role="img"
+    >
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+      <line x1="12" y1="4" x2="12" y2="20" />
+    </svg>
+  );
+}
+
+function DigitalIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+      aria-label="Digital Products"
+      role="img"
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+    </svg>
+  );
+}
+
+function InstaIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+      aria-label="Instagram"
+      role="img"
+    >
+      <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" />
+      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+    </svg>
+  );
+}
+
+function UpdatesIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-5 h-5"
+      aria-label="Updates"
+      role="img"
+    >
+      <polyline points="23 4 23 10 17 10" />
+      <polyline points="1 20 1 14 7 14" />
+      <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15" />
+    </svg>
+  );
+}
+
+// ------ SECTION HEADING HELPER ------
+function SectionHeading({
+  eyebrow,
+  title,
+  subtitle,
+}: {
+  eyebrow?: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center text-center mb-8">
+      {eyebrow && (
+        <p
+          className="text-xs font-bold tracking-widest uppercase mb-2"
+          style={{ color: GOLD_DARK }}
+        >
+          {eyebrow}
+        </p>
+      )}
+      <h2
+        className="text-2xl md:text-3xl font-bold tracking-tight max-w-xl mx-auto"
+        style={{ color: "#0A0A0A" }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              background: "linear-gradient(135deg, #D4A017, #F4C542)",
-              borderRadius: 8,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(212,160,23,0.3)",
-            }}
-          >
-            <span style={{ color: "#1a1a1a", fontWeight: 900, fontSize: 14 }}>
-              7F
-            </span>
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: 15,
-                fontWeight: 800,
-                color: "#1A1A1A",
-                letterSpacing: -0.3,
+        {title}
+      </h2>
+      {subtitle && (
+        <p
+          className="text-sm mt-2 max-w-lg mx-auto"
+          style={{ color: "#6B7280" }}
+        >
+          {subtitle}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ------ NAVBAR ------
+function Navbar() {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMenuOpen(false);
+  };
+  return (
+    <header
+      className="sticky top-0 z-50 w-full"
+      style={{
+        background: "rgba(255,255,255,0.96)",
+        backdropFilter: "blur(20px)",
+        borderBottom: "1px solid #E5E7EB",
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-14">
+        <span
+          className="text-base font-black tracking-wide"
+          style={{ color: "#0A0A0A" }}
+        >
+          The 7-Figure Store Kit
+        </span>
+        <nav className="hidden md:flex items-center gap-6">
+          {["Benefits", "Preview", "Reviews", "FAQ"].map((item) => (
+            <button
+              type="button"
+              key={item}
+              onClick={() => scrollTo(item.toLowerCase())}
+              className="text-sm font-medium transition-colors duration-200 cursor-pointer"
+              style={{ color: "#6B7280" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = GOLD;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#6B7280";
               }}
             >
-              DigitalKit Store
-            </div>
-            <div style={{ fontSize: 10, color: "#6B6B6B" }}>
-              Premium Digital Products
-            </div>
-          </div>
+              {item}
+            </button>
+          ))}
+        </nav>
+        <div className="hidden md:block">
+          <GoldButton>Get Instant Access</GoldButton>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span
-            style={{
-              fontSize: 12,
-              color: "#6B6B6B",
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
+        <button
+          type="button"
+          className="md:hidden"
+          onClick={() => setMenuOpen(!menuOpen)}
+          aria-label="Toggle menu"
+          style={{ color: "#0A0A0A" }}
+        >
+          {menuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            className="md:hidden px-4 pb-3"
+            style={{ background: "rgba(255,255,255,0.98)" }}
           >
-            <span style={{ color: "#22c55e", fontSize: 8 }}>●</span> 847 people
-            viewing now
+            {["Benefits", "Preview", "Reviews", "FAQ"].map((item) => (
+              <button
+                type="button"
+                key={item}
+                onClick={() => scrollTo(item.toLowerCase())}
+                className="block w-full text-left py-2.5 text-sm font-medium border-b"
+                style={{ color: "#6B7280", borderColor: "#E5E7EB" }}
+              >
+                {item}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  );
+}
+
+// ------ HERO ------
+function Hero() {
+  return (
+    <motion.section
+      id="hero"
+      className="relative overflow-hidden py-12 md:py-20"
+      style={{ background: "#FFFFFF" }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.7, ease: "easeOut" }}
+    >
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center">
+        {/* 1. Tag */}
+        <motion.span
+          initial={{ opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05 }}
+          className="px-3 py-1 rounded-full text-xs font-bold tracking-widest uppercase inline-flex items-center gap-1.5 mb-5"
+          style={{
+            background: "rgba(201,167,78,0.1)",
+            border: "1px solid rgba(201,167,78,0.35)",
+            color: GOLD_DARK,
+          }}
+        >
+          <Zap className="w-3 h-3" /> Limited Time Offer
+        </motion.span>
+
+        {/* 2. Headline */}
+        <motion.h1
+          className="font-black leading-tight tracking-tight mb-4 text-3xl md:text-4xl lg:text-5xl max-w-xl mx-auto text-center"
+          style={{ color: "#0A0A0A" }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, delay: 0.1, ease: "easeOut" }}
+        >
+          Launch Your Shopify Store Faster — Without Wasting Time or Money
+        </motion.h1>
+
+        {/* 3. Subheadline */}
+        <motion.p
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+          className="text-base md:text-lg font-medium mb-3 max-w-md mx-auto text-center"
+          style={{ color: "#374151" }}
+        >
+          800+ Themes, 1000+ Ad Creatives &amp; 7500+ Templates in One Kit
+        </motion.p>
+
+        {/* 4. Rating */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          className="flex items-center justify-center gap-1.5 mb-8"
+        >
+          <StarRating />
+          <span className="text-sm font-semibold" style={{ color: "#0A0A0A" }}>
+            4.9/5
           </span>
-          <button
-            type="button"
-            className="h-cta-btn"
-            style={{ width: "auto", padding: "9px 20px", fontSize: 13 }}
-            data-ocid="header.primary_button"
-          >
-            Get Instant Access
-          </button>
-        </div>
-      </header>
+          <span className="text-sm" style={{ color: "#6B7280" }}>
+            from 1,800+ users
+          </span>
+        </motion.div>
 
-      {/* Main hero */}
-      <main
-        style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 24px 0" }}
-      >
-        {/* Headline */}
-        <div
-          className="hero-animate-in"
-          style={{ textAlign: "center", marginBottom: 28 }}
+        {/* 5. Price */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.42 }}
+          className="flex items-baseline justify-center gap-2 mb-1"
         >
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              background: "linear-gradient(135deg, #fff3cd, #ffeaa7)",
-              color: "#92610a",
-              fontSize: 12,
-              fontWeight: 700,
-              padding: "5px 16px",
-              borderRadius: 20,
-              marginBottom: 16,
-              border: "1px solid rgba(201,168,76,0.3)",
-            }}
-          >
-            <span style={{ fontSize: 11 }}>🏆</span> India's #1 Digital Product
-            Bundle
-          </div>
-          <h1
-            style={{
-              fontSize: "clamp(28px, 4vw, 48px)",
-              fontWeight: 900,
-              color: "#1A1A1A",
-              lineHeight: 1.15,
-              letterSpacing: -1,
-              marginBottom: 12,
-            }}
-          >
-            Premium Digital Products
-            <br />
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg, #C9A84C, #F4C542, #C9A84C)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              for Every Store
-            </span>
-          </h1>
-          <p
-            style={{
-              fontSize: 16,
-              color: "#6B6B6B",
-              maxWidth: 480,
-              margin: "0 auto 20px",
-              lineHeight: 1.6,
-            }}
-          >
-            800+ Shopify Themes · 1000+ Ad Creatives · 7500+ Canva Templates &
-            More
-          </p>
-        </div>
+          <span className="text-4xl font-black" style={{ color: "#0A0A0A" }}>
+            ₹999
+          </span>
+          <span className="text-sm line-through" style={{ color: "#9CA3AF" }}>
+            ₹1,299
+          </span>
+          <span className="text-sm" style={{ color: "#6B7280" }}>
+            · ₹50,000+ value
+          </span>
+        </motion.div>
 
-        {/* Category tabs */}
-        <div
-          className="hero-animate-in-delay-1"
-          style={{ marginBottom: 28, maxWidth: 680, margin: "0 auto 28px" }}
+        {/* 5b. Urgency */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.48 }}
+          className="text-xs font-semibold mb-8 text-center"
+          style={{ color: GOLD_DARK }}
         >
-          <CategoryTabs active={activeTab} onSelect={handleTabSelect} />
-        </div>
+          ⚡ Limited-time pricing — price increases soon
+        </motion.p>
 
-        {/* Three-column grid */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns:
-              "minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr)",
-            gap: 18,
-            alignItems: "start",
-          }}
+        {/* 6. CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.52 }}
+          className="mb-6 flex justify-center"
         >
-          {/* Left: Shopify Themes */}
-          <ShopifyThemesCard activeTab={activeTab} />
+          <GoldButton size="large" premium>
+            Get Instant Access <ChevronRight className="w-4 h-4" />
+          </GoldButton>
+        </motion.div>
 
-          {/* Center: Featured Product */}
-          <FeaturedProductCard countdown={countdown} />
-
-          {/* Right: Ad Creatives + Instagram/Templates */}
-          <CreativesAndMockupsCard />
-        </div>
-
-        {/* Social proof strip */}
-        <div
-          className="hero-animate-in-delay-3"
-          style={{
-            marginTop: 28,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 28,
-            flexWrap: "wrap" as const,
-            padding: "16px 24px",
-            background: "rgba(255,255,255,0.7)",
-            borderRadius: 16,
-            border: "1px solid rgba(0,0,0,0.05)",
-            backdropFilter: "blur(8px)",
-          }}
+        {/* 7. Trust badges */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+          className="flex flex-wrap justify-center gap-x-5 gap-y-1.5 mb-10 text-xs"
+          style={{ color: "#374151" }}
         >
           {[
-            { value: "12,400+", label: "Happy Customers" },
-            { value: "9,840+", label: "Digital Assets" },
-            { value: "₹50,000+", label: "Total Value" },
-            { value: "4.9★", label: "Average Rating" },
-            { value: "Free", label: "Lifetime Updates" },
-          ].map((stat) => (
-            <div key={stat.label} style={{ textAlign: "center" }}>
-              <div style={{ fontSize: 18, fontWeight: 900, color: "#1A1A1A" }}>
-                {stat.value}
-              </div>
-              <div style={{ fontSize: 11, color: "#6B6B6B" }}>{stat.label}</div>
-            </div>
+            "Instant Access",
+            "Lifetime Access",
+            "No Subscription",
+            "Commercial Use",
+          ].map((item) => (
+            <span key={item} className="flex items-center gap-1">
+              <Check className="w-3 h-3" style={{ color: GOLD }} />
+              {item}
+            </span>
+          ))}
+        </motion.div>
+
+        {/* 8. Hero Image */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.65 }}
+          className="w-full max-w-2xl mx-auto rounded-2xl overflow-hidden"
+          style={{
+            boxShadow:
+              "0 8px 48px rgba(0,0,0,0.12), 0 2px 16px rgba(201,167,78,0.08)",
+          }}
+        >
+          <motion.img
+            src="/assets/generated/hero-premium-bundle-mockup.dim_1400x900.jpg"
+            alt="The 7-Figure Store Kit — Full Digital Bundle"
+            className="w-full h-auto object-cover"
+            loading="lazy"
+            animate={{ scale: [1, 1.03] }}
+            transition={{ duration: 7, ease: "easeOut" }}
+          />
+        </motion.div>
+      </div>
+    </motion.section>
+  );
+}
+
+// ------ BENEFITS ------
+const TICKER_ITEMS = [
+  "Launch Your Store in Minutes",
+  "Start Earning Faster",
+  "Get Converting Ads",
+  "No Skills Required",
+  "Save 100+ Hours of Work",
+  "Scale Like a Brand",
+  "Zero Investment Needed",
+  "Lifetime Access & Updates",
+];
+
+const GOLD_KEYWORDS = ["Launch", "Earning", "Scale", "Lifetime"];
+
+function highlightKeywords(text: string) {
+  const parts = text.split(/\b/);
+  return parts.map((part, i) => {
+    if (GOLD_KEYWORDS.includes(part)) {
+      return (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static text parts
+        <span key={i} style={{ color: GOLD, fontWeight: 600 }}>
+          {part}
+        </span>
+      );
+    }
+    return part;
+  });
+}
+
+function Benefits() {
+  const sectionRef = useRef<HTMLElement>(null);
+  const isInView = useInView(sectionRef, { once: true });
+  useEffect(() => {
+    if (isInView) window.fbq?.("track", "ViewContent");
+  }, [isInView]);
+
+  const repeated = [
+    ...TICKER_ITEMS.map((t) => `a-${t}`),
+    ...TICKER_ITEMS.map((t) => `b-${t}`),
+    ...TICKER_ITEMS.map((t) => `c-${t}`),
+  ];
+
+  return (
+    <section
+      id="benefits"
+      ref={sectionRef}
+      className="py-6"
+      style={{ background: "#FFFFFF" }}
+    >
+      <style>{`
+        @keyframes ticker-scroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.333%); }
+        }
+        .ticker-track {
+          animation: ticker-scroll 45s linear infinite;
+          display: flex;
+          width: max-content;
+        }
+      `}</style>
+      <div className="text-center mb-4">
+        <h2
+          className="text-base md:text-lg font-medium tracking-tight"
+          style={{ color: "#0A0A0A" }}
+        >
+          Why Choose This Kit
+        </h2>
+        <div
+          className="mx-auto mt-1.5 rounded-full"
+          style={{
+            width: 28,
+            height: 2,
+            background: `linear-gradient(90deg, ${GOLD}, ${GOLD_LIGHT})`,
+          }}
+        />
+      </div>
+      <div
+        style={{
+          overflow: "hidden",
+          maskImage:
+            "linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent)",
+          WebkitMaskImage:
+            "linear-gradient(to right, transparent, black 80px, black calc(100% - 80px), transparent)",
+        }}
+      >
+        <div className="ticker-track">
+          {repeated.map((item) => (
+            <span
+              key={item}
+              className="whitespace-nowrap"
+              style={{
+                opacity: 0.92,
+                fontSize: "0.9rem",
+                fontWeight: 500,
+                letterSpacing: "0.01em",
+                padding: "0 0.6rem",
+                color: "#0A0A0A",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.6rem",
+              }}
+            >
+              {highlightKeywords(item.slice(2))}
+              <span style={{ color: GOLD, opacity: 0.7, fontSize: "0.7rem" }}>
+                •
+              </span>
+            </span>
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+// ------ PREVIEW ------
+const PREVIEW_ITEMS: {
+  type: "shopify" | "canva" | "instagram" | "plr" | "code";
+  label: string;
+  benefit: string;
+  src: string;
+  alt: string;
+}[] = [
+  {
+    type: "shopify",
+    label: "800+ Shopify Premium Themes",
+    benefit: "Launch your store faster — any niche, any brand",
+    src: "/assets/generated/preview-shopify-themes.dim_800x500.jpg",
+    alt: "Shopify store themes preview",
+  },
+  {
+    type: "canva",
+    label: "1000+ Canva Ad Creatives",
+    benefit: "Run high-converting ads without a designer",
+    src: "/assets/generated/preview-canva-ads.dim_800x500.jpg",
+    alt: "Canva ad templates dashboard",
+  },
+  {
+    type: "instagram",
+    label: "130+ Instagram Branding Mockups",
+    benefit: "Build premium brand visuals in minutes",
+    src: "/assets/generated/preview-instagram-kit.dim_800x500.jpg",
+    alt: "Instagram feed mockups",
+  },
+  {
+    type: "plr",
+    label: "7500+ Canva Templates",
+    benefit: "Sell or use planners, journals & trackers instantly",
+    src: "/assets/generated/canva-templates-mockup.dim_1200x800.jpg",
+    alt: "Canva planners, journals & trackers templates",
+  },
+  {
+    type: "code",
+    label: "210+ Conversion Code Snippets",
+    benefit: "Boost store sales automatically — no dev needed",
+    src: "/assets/generated/code-snippets-preview.dim_1400x700.jpg",
+    alt: "210+ Conversion Code Snippets — split mockup of code editor and Shopify product page",
+  },
+];
+
+function PreviewSection() {
+  return (
+    <section id="preview" className="py-16" style={{ background: "#FAFAFA" }}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <SectionHeading eyebrow="Real assets included" title="Inside the Kit" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {PREVIEW_ITEMS.map((item, i) => (
+            <motion.div
+              key={item.type}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.07 }}
+              className={`relative overflow-hidden rounded-xl${item.type === "code" ? " md:col-span-2" : ""}`}
+              style={{
+                boxShadow:
+                  "0 4px 20px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div className="aspect-video relative">
+                <img
+                  src={item.src}
+                  alt={item.alt}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+              <div
+                className="absolute bottom-0 left-0 right-0 px-4 py-3 text-center"
+                style={{
+                  background: "linear-gradient(transparent, rgba(0,0,0,0.58))",
+                }}
+              >
+                <span className="text-white font-semibold text-sm block">
+                  {item.label}
+                </span>
+                <span
+                  className="text-xs block mt-0.5"
+                  style={{ color: "rgba(255,255,255,0.72)" }}
+                >
+                  {item.benefit}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ------ WHAT YOU GET ------
+function WhatYouGet() {
+  const items: {
+    icon: React.ReactNode;
+    title: string;
+    desc: string;
+  }[] = [
+    {
+      icon: <ShopifyIcon />,
+      title: "800+ Shopify Themes",
+      desc: "Launch your store instantly",
+    },
+    {
+      icon: <CanvaIcon />,
+      title: "1000+ Ad Creatives",
+      desc: "Run high-converting ads easily",
+    },
+    {
+      icon: <CodeIcon />,
+      title: "210+ Code Snippets",
+      desc: "Boost conversions automatically",
+    },
+    {
+      icon: <DigitalIcon />,
+      title: "7500+ Canva Templates",
+      desc: "Create premium content fast",
+    },
+    {
+      icon: <InstaIcon />,
+      title: "130+ Instagram Mockups",
+      desc: "Build brand like an agency",
+    },
+    {
+      icon: <UpdatesIcon />,
+      title: "Free Lifetime Updates",
+      desc: "New assets added regularly",
+    },
+  ];
+
+  return (
+    <section
+      id="bundle"
+      className="py-14 md:py-20"
+      style={{ background: "#FAFAFA" }}
+    >
+      <div className="max-w-3xl mx-auto px-4 sm:px-6">
+        <SectionHeading
+          title="What You Get"
+          subtitle="The ₹50,000+ Value Breakdown"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-2">
+          {items.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: i * 0.06 }}
+              className="flex flex-col items-center text-center gap-2 px-4 py-5"
+              style={{
+                borderBottom:
+                  i < items.length - (items.length % 2 === 0 ? 2 : 1)
+                    ? "1px solid #EBEBEB"
+                    : "none",
+              }}
+            >
+              <div className="flex items-center justify-center gap-2">
+                <div
+                  className="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center"
+                  style={{
+                    background: "rgba(201,167,78,0.12)",
+                    border: "1px solid rgba(201,167,78,0.3)",
+                  }}
+                >
+                  <Check className="w-3.5 h-3.5" style={{ color: GOLD_DARK }} />
+                </div>
+                <span style={{ color: GOLD_DARK }}>{item.icon}</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <span
+                  className="font-semibold text-sm leading-snug"
+                  style={{ color: "#0A0A0A" }}
+                >
+                  {item.title}
+                </span>
+                <span
+                  className="text-xs mt-0.5 leading-relaxed"
+                  style={{ color: "#6B7280" }}
+                >
+                  {item.desc}
+                </span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ------ BONUSES ------
+function Bonuses() {
+  const bonuses = [
+    {
+      icon: <RefreshCw className="w-6 h-6" />,
+      title: "FREE Future Updates",
+      desc: "New themes, templates & creatives added regularly — yours free, forever. Your toolkit grows without you paying again.",
+    },
+    {
+      icon: <InfinityIcon className="w-6 h-6" />,
+      title: "Lifetime Access",
+      desc: "Pay ₹999 once. Own everything forever. No subscriptions, no renewals — access your files 5 years from now, free.",
+    },
+    {
+      icon: <Shield className="w-6 h-6" />,
+      title: "Commercial Usage Allowed",
+      desc: "Use for unlimited client stores and your own brand. Sell the templates, charge for setup, keep 100% of the profit.",
+    },
+  ];
+  return (
+    <section
+      className="py-14"
+      style={{
+        background: "rgba(201,167,78,0.05)",
+        borderTop: "1px solid rgba(201,167,78,0.35)",
+        borderBottom: "1px solid rgba(201,167,78,0.35)",
+      }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-center mb-4">
+          <span
+            className="px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase"
+            style={{
+              background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+              color: "#000000",
+              boxShadow: "0 2px 10px rgba(201,167,78,0.25)",
+            }}
+          >
+            EXCLUSIVE BONUSES
+          </span>
+        </div>
+        <div className="text-center mb-8">
+          <h2
+            className="text-2xl md:text-3xl font-bold mb-2 tracking-tight max-w-xl mx-auto"
+            style={{ color: "#0A0A0A" }}
+          >
+            Exclusive Bonuses
+          </h2>
+          <div
+            className="mx-auto mt-1.5 rounded-full"
+            style={{
+              width: 40,
+              height: 2,
+              background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+            }}
+          />
+          <p
+            className="text-sm mt-2 max-w-md mx-auto"
+            style={{ color: "#6B7280" }}
+          >
+            Everything included in your one-time purchase
+          </p>
+        </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {bonuses.map((b, i) => (
+            <motion.div
+              key={b.title}
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: i * 0.08 }}
+              className="relative p-5 rounded-xl text-center flex flex-col items-center gap-2.5 bg-white"
+              style={{
+                border: "1px solid rgba(201,167,78,0.35)",
+                boxShadow:
+                  "0 2px 12px rgba(201,167,78,0.08), 0 1px 4px rgba(0,0,0,0.03)",
+              }}
+            >
+              <span
+                className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full text-xs font-bold"
+                style={{
+                  background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+                  color: "#000000",
+                }}
+              >
+                FREE
+              </span>
+              <div
+                className="w-11 h-11 rounded-xl flex items-center justify-center"
+                style={{
+                  background: "rgba(201,167,78,0.1)",
+                  color: GOLD_DARK,
+                  border: "1px solid rgba(201,167,78,0.3)",
+                }}
+              >
+                {b.icon}
+              </div>
+              <h3 className="text-sm font-bold" style={{ color: "#0A0A0A" }}>
+                {b.title}
+              </h3>
+              <p
+                className="text-xs leading-relaxed max-w-xs mx-auto"
+                style={{ color: "#6B7280" }}
+              >
+                {b.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ------ REVIEWS ------
+const REVIEWS = [
+  {
+    name: "Rahul M.",
+    location: "Delhi",
+    initials: "RM",
+    text: "Launched my Shopify store in 2 days. Already hit ₹30,000 in sales in the first week. These themes are insanely polished.",
+  },
+  {
+    name: "Priya S.",
+    location: "Mumbai",
+    initials: "PS",
+    text: "Best ₹999 I've ever spent. The Canva templates alone saved me ₹15,000 in design fees. Using them for all 6 of my clients.",
+  },
+  {
+    name: "Arjun K.",
+    location: "Bangalore",
+    initials: "AK",
+    text: "Added the code snippets to my store and conversion rate jumped from 1.2% to 3.8%. My clients can't believe the difference.",
+  },
+  {
+    name: "Sneha R.",
+    location: "Pune",
+    initials: "SR",
+    text: "I was a complete beginner. 4 weeks after buying this kit, my store crossed ₹1 lakh in revenue. Totally beginner-friendly.",
+  },
+  {
+    name: "Karan V.",
+    location: "Hyderabad",
+    initials: "KV",
+    text: "The Instagram branding kit transformed my feed. Went from 200 to 4,200 followers in 30 days. Sales doubled right after.",
+  },
+  {
+    name: "Nisha T.",
+    location: "Chennai",
+    initials: "NT",
+    text: "I've spent ₹40,000+ on courses with zero results. This ₹999 kit delivered more in 2 weeks than all of them combined.",
+  },
+  {
+    name: "Dev A.",
+    location: "Ahmedabad",
+    initials: "DA",
+    text: "Used the Canva templates to build a full digital product line over a weekend. Made ₹12,000 in the first 3 days of launch.",
+  },
+  {
+    name: "Pooja L.",
+    location: "Kolkata",
+    initials: "PL",
+    text: "Lifetime access is the real win. New templates keep dropping and I never pay again. This is the only purchase I don't regret.",
+  },
+  {
+    name: "Mihir J.",
+    location: "Surat",
+    initials: "MJ",
+    text: "I run a 6-client Shopify agency. This kit cut our store setup time from 2 weeks to 3 days. ROI was instant on day one.",
+  },
+  {
+    name: "Ananya D.",
+    location: "Jaipur",
+    initials: "AD",
+    text: "My first digital store went live in under 3 hours. Made my first ₹3,200 sale the same evening. Absolutely life-changing.",
+  },
+];
+
+function ReviewCard({ r }: { r: (typeof REVIEWS)[0] & { uid?: string } }) {
+  return (
+    <div
+      className="flex-shrink-0 flex flex-col gap-2.5 p-4 rounded-xl bg-white text-center items-center"
+      style={{
+        width: 260,
+        border: "1px solid #EBEBEB",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+      }}
+    >
+      <StarRating />
+      <p
+        className="text-xs leading-relaxed italic"
+        style={{ color: "#374151" }}
+      >
+        &ldquo;{r.text}&rdquo;
+      </p>
+      <div
+        className="flex items-center justify-center gap-2.5 mt-auto pt-2 w-full"
+        style={{ borderTop: "1px solid #EBEBEB" }}
+      >
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+          style={{
+            background: `linear-gradient(135deg, ${GOLD}, ${GOLD_LIGHT})`,
+            color: "#000",
+          }}
+        >
+          {r.initials}
+        </div>
+        <div className="text-left">
+          <div className="font-semibold text-xs" style={{ color: "#0A0A0A" }}>
+            {r.name}
+          </div>
+          <div className="text-xs" style={{ color: "#9CA3AF" }}>
+            {r.location}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Reviews() {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(false);
+  const doubled = [
+    ...REVIEWS.map((r, i) => ({ ...r, uid: `a${i}` })),
+    ...REVIEWS.map((r, i) => ({ ...r, uid: `b${i}` })),
+  ];
+
+  return (
+    <section
+      id="reviews"
+      className="py-16 overflow-hidden"
+      style={{ background: "#FFFFFF" }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-6">
+        <SectionHeading
+          title="What Our Customers Say"
+          subtitle="Real results from store owners across India"
+        />
+      </div>
+      <div
+        className="relative"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
+      >
+        <motion.div
+          ref={trackRef}
+          className="flex gap-3 px-4"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+            ...(paused ? { playState: "paused" } : {}),
+          }}
+          style={{
+            width: "max-content",
+            animationPlayState: paused ? "paused" : "running",
+          }}
+        >
+          {doubled.map((r) => (
+            <ReviewCard key={r.uid} r={r} />
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ------ FAQ ------
+function FAQ() {
+  const faqs = [
+    {
+      q: "How do I access the files after purchase?",
+      a: "You'll receive an instant download link via email right after payment. The link is permanent — you can access your files anytime, forever.",
+    },
+    {
+      q: "Is this beginner friendly?",
+      a: "Absolutely! The vast majority of resources require zero coding knowledge. Just download, customize, and launch.",
+    },
+    {
+      q: "Can I use this for multiple stores?",
+      a: "Yes! Your purchase includes a full commercial license, allowing use across unlimited stores and client projects with no restrictions.",
+    },
+    {
+      q: "What is the refund policy?",
+      a: "Due to the instant-access digital nature of this product, we do not offer refunds after the files have been downloaded. If you face any issues, our support team is here to help.",
+    },
+    {
+      q: "Do I need a Shopify subscription to use the themes?",
+      a: "Yes, you'll need an active Shopify plan to upload and use the store themes. Canva templates, code snippets, and other resources can be used independently.",
+    },
+    {
+      q: "Are future updates really free?",
+      a: "Yes — any new themes, templates, or resources we add to the bundle are automatically available to all existing customers at no additional cost.",
+    },
+  ];
+  return (
+    <section id="faq" className="py-16" style={{ background: "#FAFAFA" }}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6">
+        <SectionHeading
+          title="Frequently Asked Questions"
+          subtitle="Got questions? We have answers."
+        />
+        <Accordion type="single" collapsible className="space-y-2">
+          {faqs.map((faq, i) => (
+            <AccordionItem
+              key={faq.q}
+              value={`faq-${i}`}
+              className="rounded-xl overflow-hidden border-0 bg-white"
+              style={{
+                border: "1px solid #EBEBEB",
+                boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+              }}
+            >
+              <AccordionTrigger
+                className="px-5 py-4 text-center font-semibold text-sm hover:no-underline justify-center gap-2"
+                style={{ color: "#0A0A0A" }}
+              >
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent
+                className="px-5 pb-4 text-sm leading-relaxed text-center max-w-2xl mx-auto"
+                style={{ color: "#6B7280" }}
+              >
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </div>
+    </section>
+  );
+}
+
+// ------ FINAL CTA ------
+function FinalCTA() {
+  return (
+    <section
+      className="py-16 relative overflow-hidden"
+      style={{ background: "#FFFFFF" }}
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="flex flex-col items-center text-center gap-5 max-w-xl mx-auto"
+        >
+          <h2
+            className="text-3xl md:text-4xl font-black leading-tight max-w-lg mx-auto"
+            style={{ color: "#0A0A0A" }}
+          >
+            Stop Waiting. Start Selling. Everything You Need is Here.
+          </h2>
+          <p className="text-sm max-w-md mx-auto" style={{ color: "#6B7280" }}>
+            Join 1,800+ store owners who stopped wasting money on tools and
+            started making real revenue.
+          </p>
+          <div
+            className="px-6 py-4 rounded-xl bg-white"
+            style={{
+              border: "1px solid #EBEBEB",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+            }}
+          >
+            <div
+              className="text-xs line-through mb-0.5"
+              style={{ color: "#9CA3AF" }}
+            >
+              Was ₹1,299
+            </div>
+            <div className="text-4xl font-black" style={{ color: "#0A0A0A" }}>
+              ₹999
+            </div>
+            <div className="text-xs mt-0.5" style={{ color: "#6B7280" }}>
+              One-time payment · Lifetime access
+            </div>
+          </div>
+          <p className="text-xs font-semibold" style={{ color: GOLD_DARK }}>
+            ⚡ Limited offer — grab it before the price goes up
+          </p>
+          <div className="py-2 flex justify-center">
+            <GoldButton size="large" className="text-base" vibrate>
+              Get Instant Access <ChevronRight className="w-4 h-4" />
+            </GoldButton>
+          </div>
+          <div className="flex flex-wrap gap-3 justify-center">
+            {[
+              {
+                icon: <Download className="w-3.5 h-3.5" />,
+                label: "Instant Download",
+              },
+              {
+                icon: <InfinityIcon className="w-3.5 h-3.5" />,
+                label: "Lifetime Access",
+              },
+              {
+                icon: <Shield className="w-3.5 h-3.5" />,
+                label: "Commercial License",
+              },
+            ].map((badge) => (
+              <div
+                key={badge.label}
+                className="flex items-center gap-1.5 text-xs"
+                style={{ color: "#6B7280" }}
+              >
+                <span style={{ color: GOLD }}>{badge.icon}</span>
+                {badge.label}
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
+
+// ------ STICKY MOBILE CTA ------
+function StickyCTA() {
+  return (
+    <div
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden px-4 pb-3 pt-2.5"
+      style={{
+        background: "rgba(255,255,255,0.97)",
+        backdropFilter: "blur(12px)",
+        borderTop: "1px solid #E5E7EB",
+      }}
+    >
+      <GoldButton className="w-full" size="large" vibrate>
+        Claim Kit for ₹999 <ChevronRight className="w-4 h-4" />
+      </GoldButton>
+    </div>
+  );
+}
+
+// ------ FOOTER ------
+function Footer() {
+  const year = new Date().getFullYear();
+  return (
+    <footer style={{ background: "#0A0A0A", borderTop: "1px solid #1F1F1F" }}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+        <div className="flex flex-col items-center text-center gap-5 md:flex-row md:justify-between md:items-start md:text-left">
+          <div className="flex flex-col gap-1.5 items-center md:items-start">
+            <span className="text-base font-black" style={{ color: GOLD }}>
+              The 7-Figure Store Kit
+            </span>
+            <p className="text-xs max-w-xs" style={{ color: "#6B7280" }}>
+              The ultimate toolkit for building profitable ecommerce brands.
+            </p>
+          </div>
+          <div className="flex flex-col gap-2.5 items-center md:items-end">
+            <div className="flex gap-5">
+              {["Privacy Policy", "Terms of Use"].map((link) => (
+                <button
+                  type="button"
+                  key={link}
+                  className="text-xs transition-colors duration-200"
+                  style={{ color: "#6B7280" }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = GOLD;
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#6B7280";
+                  }}
+                >
+                  {link}
+                </button>
+              ))}
+            </div>
+            <a
+              href="mailto:creatortoolssupport@gmail.com"
+              className="text-xs transition-colors duration-200"
+              style={{ color: "#6B7280" }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = GOLD;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "#6B7280";
+              }}
+            >
+              creatortoolssupport@gmail.com
+            </a>
+          </div>
+        </div>
+        <div
+          className="mt-6 pt-4 text-xs text-center"
+          style={{ borderTop: "1px solid #1F1F1F", color: "#4B5563" }}
+        >
+          <p>© {year} The 7-Figure Store Kit. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ------ PIXEL TRACKER ------
+function PixelTracker() {
+  usePixelTracking();
+  return null;
+}
+
+// ------ MAIN APP ------
+export default function App() {
+  return (
+    <div
+      className="min-h-screen pb-20 md:pb-0"
+      style={{ background: "#FFFFFF" }}
+    >
+      <PixelTracker />
+      <Navbar />
+      <main>
+        <Hero />
+        <WhatYouGet />
+        <Benefits />
+        <PreviewSection />
+        <Bonuses />
+        <Reviews />
+        <FAQ />
+        <FinalCTA />
       </main>
+      <Footer />
+      <StickyCTA />
     </div>
   );
 }
