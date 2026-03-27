@@ -369,7 +369,7 @@ function Hero() {
           className="flex items-baseline justify-center gap-2 mb-1"
         >
           <span className="text-4xl font-black" style={{ color: "#0A0A0A" }}>
-            ₹999
+            ₹499
           </span>
           <span className="text-sm line-through" style={{ color: "#9CA3AF" }}>
             ₹1,299
@@ -747,7 +747,7 @@ function Bonuses() {
     {
       icon: <InfinityIcon className="w-6 h-6" />,
       title: "Lifetime Access",
-      desc: "Pay ₹999 once. Own everything forever. No subscriptions, no renewals — access your files 5 years from now, free.",
+      desc: "Pay ₹499 once. Own everything forever. No subscriptions, no renewals — access your files 5 years from now, free.",
     },
     {
       icon: <Shield className="w-6 h-6" />,
@@ -867,7 +867,7 @@ const REVIEWS = [
     name: "Priya S.",
     location: "Mumbai",
     initials: "PS",
-    text: "Best ₹999 I've ever spent. The Canva templates alone saved me ₹15,000 in design fees. Using them for all 6 of my clients.",
+    text: "Best ₹499 I've ever spent. The Canva templates alone saved me ₹15,000 in design fees. Using them for all 6 of my clients.",
   },
   {
     name: "Arjun K.",
@@ -891,7 +891,7 @@ const REVIEWS = [
     name: "Nisha T.",
     location: "Chennai",
     initials: "NT",
-    text: "I've spent ₹40,000+ on courses with zero results. This ₹999 kit delivered more in 2 weeks than all of them combined.",
+    text: "I've spent ₹40,000+ on courses with zero results. This ₹499 kit delivered more in 2 weeks than all of them combined.",
   },
   {
     name: "Dev A.",
@@ -1119,7 +1119,7 @@ function FinalCTA() {
               Was ₹1,299
             </div>
             <div className="text-4xl font-black" style={{ color: "#0A0A0A" }}>
-              ₹999
+              ₹499
             </div>
             <div className="text-xs mt-0.5" style={{ color: "#6B7280" }}>
               One-time payment · Lifetime access
@@ -1176,7 +1176,7 @@ function StickyCTA() {
       }}
     >
       <GoldButton className="w-full" size="large" vibrate>
-        Claim Kit for ₹999 <ChevronRight className="w-4 h-4" />
+        Claim Kit for ₹499 <ChevronRight className="w-4 h-4" />
       </GoldButton>
     </div>
   );
